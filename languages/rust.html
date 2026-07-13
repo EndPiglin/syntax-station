@@ -30,19 +30,24 @@
 
         <details class="snippet-container" open>
             <summary><h2>Variables</h2></summary>
-            <pre><code class="language-rust">let my_int: i32 = 101;              // Integer
-let my_float: f64 = 45.81;          // Float
+            <pre><code class="language-rust">let my_int: i32 = 101;              // Integer (32-bit signed)
+let my_float: f64 = 45.81;          // Float (64-bit, default float type)
 let positive: bool = true;           // Boolean
-let message: &amp;str = "Hello World!"; // String slice
+let message: &amp;str = "Hello World!"; // String slice (immutable reference to string data)
 
-let letter: char = 'a';             // Character
+let letter: char = 'a';             // Character (4 bytes, supports Unicode)
 
+// By default, variables are immutable in Rust
 let pi = 3.14159;                    // Type inferred as f64
-let count: u32 = 100;               // Unsigned integer
+let count: u32 = 100;               // Unsigned integer (only positive values)
 
-// Mutable variables require "mut"
+// Mutable variables require "mut" keyword
 let mut age = 21;
-age = 22;                           // OK because of "mut"</code></pre>
+age = 22;                           // OK because of "mut"
+
+// Shadowing: re-declaring a variable with "let" allows type changes
+let spaces = "   ";                 // &amp;str
+let spaces = spaces.len();          // now spaces is a usize (4)</code></pre>
         </details>
 
         <details class="snippet-container" open>
@@ -55,8 +60,12 @@ age = 22;                           // OK because of "mut"</code></pre>
    treated as a comment
 */
 
-/// Documentation comments (used by rustdoc)
-/// These are typically placed above functions/structs</code></pre>
+/// Documentation comments (used by rustdoc to generate docs)
+/// These are typically placed above functions/structs
+/// Supports Markdown formatting
+
+// ! is used for module-level doc comments
+//! This module handles string utilities</code></pre>
         </details>
 
         <details class="snippet-container" open>
@@ -69,18 +78,27 @@ let result = foo + bar;
 
 /*
      + : Addition             - : Subtraction
-     * : Multiplication       / : Division
+     * : Multiplication       / : Division (integer division for integers)
      % : Modulus Division
+
+     ++ and -- do not exist in Rust
 */
 
 foo += 12;   // Addition assignment operator
-foo -= 35;   // Subtraction assignment operator</code></pre>
+foo -= 35;   // Subtraction assignment operator
+
+// Rust will not implicitly convert between types
+let x: i32 = 5;
+let y: f64 = 2.0;
+// let z = x + y;  // ERROR: cannot add f64 to i32
+let z = x as f64 + y;  // Must explicitly cast with "as"</code></pre>
         </details>
 
         <details class="snippet-container" open>
             <summary><h2>Conditionals</h2></summary>
             <pre><code class="language-rust">let year = 2018;
 
+// No parentheses needed around conditions in Rust
 if year > 2018 {
    println!("After 2018");
 } else if year < 2018 {
@@ -95,8 +113,17 @@ if year > 2018 {
    >= : Greater than or equal to   <= : Less than or equal to
 */
 
-// if is an expression that returns a value
-let message = if year > 2018 { "After" } else { "Before" };</code></pre>
+// "if" is an expression that returns a value
+let message = if year > 2018 { "After" } else { "Before" };
+
+// Match expression (like switch, but exhaustive)
+let number = 3;
+let label = match number {
+   1 => "one",
+   2 => "two",
+   3 => "three",
+   _ => "other",   // _ is the catch-all pattern
+};</code></pre>
         </details>
 
         <details class="snippet-container" open>
@@ -109,43 +136,76 @@ while foo < 100 {
 }
 
 // For Loop (iterates through a range)
+// 0..100 means 0 to 99 (exclusive end)
 for i in 0..100 {
    foo += i;   // adds all values from 0 to 99
 }
 
+// For Loop with inclusive range (0 to 100 including 100)
+for i in 0..=100 {
+   foo += i;
+}
+
 // Loop (infinite, use break to exit)
+// "loop" always returns a value via break
 let mut count = 0;
-loop {
+let result = loop {
    count += 1;
-   if count == 50 { break; }
+   if count == 50 { break count * 2; }  // returns 100
+};
+
+// Iterate through a collection
+let grades = vec![97, 84, 89, 93];
+for grade in &amp;grades {
+   println!("{}", grade);   // "grade" is the current element
 }</code></pre>
         </details>
 
         <details class="snippet-container" open>
             <summary><h2>Vectors</h2></summary>
-            <pre><code class="language-rust">// Creates a vector of integers
+            <pre><code class="language-rust">// Creates an empty vector of integers
 let mut scores: Vec&lt;i32&gt; = Vec::new();
 
 scores.push(92);
 scores.push(87);
 println!("{}", scores[0]);   // Prints 92
 
-// Initialize at declaration
+// Initialize at declaration using the vec! macro
 let grades = vec!['A', 'C', 'A', 'B'];
 
 // Vector length
 let count = grades.len();
 
+// Access elements (will panic if index is out of bounds)
+let first = grades[0];
+
+// Access safely (returns Option, no panic)
+match grades.get(5) {
+   Some(value) => println!("Found: {}", value),
+   None => println!("Index out of bounds"),
+}
+
+// Remove an element
+grades.remove(0);    // Removes and returns element at index 0
+
+// Insert an element
+grades.insert(1, 'B');  // Inserts 'B' at index 1
+
 // Iterate through a vector
 for grade in &amp;grades {
    println!("{}", grade);
-}</code></pre>
+}
+
+// Get a slice of the vector
+let subset = &amp;grades[1..3];   // elements at index 1 and 2</code></pre>
         </details>
 
         <details class="snippet-container" open>
             <summary><h2>Functions</h2></summary>
-            <pre><code class="language-rust">fn is_negative(n: i32) -> bool {
-   return n < 0;
+            <pre><code class="language-rust">// Functions are declared with "fn"
+// Parameters require type annotations
+fn is_negative(n: i32) -> bool {
+   return n < 0;    // explicit return with "return" keyword
 }
 
 let answer = is_negative(-5);
@@ -155,21 +215,35 @@ if answer {
 
 // Functions with multiple parameters
 fn add(a: i32, b: i32) -> i32 {
-   a + b   // No semicolon = implicit return
+   a + b   // No semicolon = implicit return (last expression)
 }
 
-let sum = add(5, 10);</code></pre>
+let sum = add(5, 10);   // sum = 15
+
+// No parameters
+fn print_hello() {
+   println!("Hello!");
+}
+
+// Return multiple values using a tuple
+fn swap(a: i32, b: i32) -> (i32, i32) {
+   (b, a)
+}
+
+let (x, y) = swap(1, 2);   // x = 2, y = 1</code></pre>
         </details>
 
         <details class="snippet-container" open>
             <summary><h2>Structs</h2></summary>
-            <pre><code class="language-rust">struct Person {
+            <pre><code class="language-rust">// Structs are custom data types that group related fields
+struct Person {
    name: String,
    age: u32,
 }
 
-// Implementation block
+// Implementation block defines methods on the struct
 impl Person {
+   // Associated function (like a constructor, called with ::)
    fn new(name: &amp;str, age: u32) -> Person {
       Person {
          name: String::from(name),
@@ -177,19 +251,27 @@ impl Person {
       }
    }
 
+   // Method (takes &amp;self as first parameter)
    fn greet(&amp;self) {
       println!("Hello, my name is {}!", self.name);
    }
+
+   // Mutable method (takes &amp;mut self)
+   fn have_birthday(&amp;mut self) {
+      self.age += 1;
+   }
 }
 
-let person = Person::new("Bob", 30);
+let mut person = Person::new("Bob", 30);
 println!("{} is {} years old", person.name, person.age);
-person.greet();</code></pre>
+person.have_birthday();           // age is now 31
+person.greet();                   // prints "Hello, my name is Bob!"</code></pre>
         </details>
 
         <details class="snippet-container" open>
             <summary><h2>Enums &amp; Pattern Matching</h2></summary>
-            <pre><code class="language-rust">enum Direction {
+            <pre><code class="language-rust">// Enums define a type by listing its possible variants
+enum Direction {
    North,
    South,
    East,
@@ -198,6 +280,7 @@ person.greet();</code></pre>
 
 let dir = Direction::North;
 
+// "match" must handle every possible variant (exhaustive)
 match dir {
    Direction::North => println!("Going north"),
    Direction::South => println!("Going south"),
@@ -205,22 +288,36 @@ match dir {
    Direction::West  => println!("Going west"),
 }
 
-// Enums can hold data
+// Enums can hold data in each variant
 enum Shape {
-   Circle(f64),           // radius
-   Rectangle(f64, f64),   // width, height
+   Circle(f64),           // holds radius
+   Rectangle(f64, f64),   // holds width and height
 }
 
 let shape = Shape::Circle(5.0);
+
+// Destructure and match on enum data
 match shape {
    Shape::Circle(r) => println!("Circle with radius {}", r),
    Shape::Rectangle(w, h) => println!("Rectangle {}x{}", w, h),
+}
+
+// Useful enum: Option (Rust has no null)
+let some_number: Option&lt;i32&gt; = Some(5);
+let no_number: Option&lt;i32&gt; = None;
+
+// Must handle the None case before using the value
+match some_number {
+   Some(n) => println!("Found: {}", n),
+   None => println!("Nothing"),
 }</code></pre>
         </details>
 
         <details class="snippet-container" open>
             <summary><h2>Error Handling</h2></summary>
-            <pre><code class="language-rust">// Option: represents a value or nothing
+            <pre><code class="language-rust">// Rust uses Option and Result for error handling (no exceptions)
+
+// Option: represents a value that might not exist
 let some_number: Option&lt;i32&gt; = Some(5);
 let no_number: Option&lt;i32&gt; = None;
 
@@ -229,7 +326,7 @@ match some_number {
    None => println!("Nothing"),
 }
 
-// Result: represents success or failure
+// Result: represents success (Ok) or failure (Err)
 use std::fs;
 
 fn read_file() -> Result&lt;String, std::io::Error&gt; {
@@ -241,7 +338,15 @@ match read_file() {
    Err(e) => println!("Error: {}", e),
 }
 
-// ? operator propagates errors up the call stack</code></pre>
+// ? operator: propagates errors up the calling function
+// If Result is Err, returns early with that error
+fn read_file_short() -> Result&lt;String, std::io::Error&gt; {
+   let contents = fs::read_to_string("example.txt")?;
+   Ok(contents)
+}
+
+// unwrap() will panic on Err (use only in tests/prototypes)
+let contents = fs::read_to_string("example.txt").unwrap();</code></pre>
         </details>
 
         <a href="../index.html" class="back-link">&larr; Back to Home</a>
